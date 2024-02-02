@@ -26,8 +26,12 @@ void qing::MachOFile::LoadFile() {
   }
 
   // load_command
-  input_file.read(reinterpret_cast<char*>(&_load_cmd), sizeof(_load_cmd));
-
+  for (int i = 0; i < _header.ncmds; i++) {
+    load_command lc;
+    input_file.read(reinterpret_cast<char*>(&lc), sizeof(lc));
+    _load_cmd.push_back(lc);
+    input_file.seekg(lc.cmdsize - sizeof(lc), std::ios::cur);
+  }
 }
 
 void qing::MachOFile::PrintFileInfo() {
@@ -39,4 +43,9 @@ void qing::MachOFile::PrintFileInfo() {
   std::cout << "Size of Commands: " << _header.sizeofcmds << std::endl;
   std::cout << "Flags: " << _header.flags << std::endl;
 
+  std::cout << "---------------------- load_command ----------------------\n";
+  for (int i = 0; i < _load_cmd.size(); ++i) {
+    std::cout << "cmd: " << _load_cmd[i].cmd << std::endl;
+    std::cout << "cmdsize: " << _load_cmd[i].cmdsize << std::endl;
+  }
 }
